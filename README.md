@@ -204,7 +204,7 @@ PUBLIC_BASE_URL=http://localhost:5000
 python app.py
 ```
 
-Visit **http://localhost:5000** — you'll land on the sign-in page first;
+Visit **https://address-guard-ai-6se9.vercel.app/** — you'll land on the sign-in page first;
 click **Create one** to register an account, which signs you in
 immediately.
 
