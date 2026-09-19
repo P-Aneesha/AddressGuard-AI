@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In &mdash; AddressGuard AI</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+<div class="auth-card">
+  <div class="brand" style="justify-content:center; margin-bottom: 18px;">
+    <span class="brand-mark">AG</span>
+    <div>
+      <h1>AddressGuard AI</h1>
+      <p>Sign in to your validation dashboard</p>
+    </div>
+  </div>
+
+  <form id="login-form">
+    <label>Username</label>
+    <input type="text" id="login-username" autocomplete="username" required>
+    <label>Password</label>
+    <input type="password" id="login-password" autocomplete="current-password" required>
+    <p id="login-error" class="auth-error hidden"></p>
+    <button type="submit" class="btn-primary" style="width:100%; margin-top: 8px;">Sign In</button>
+  </form>
+
+  <p class="auth-switch">Don't have an account? <a href="/register">Create one</a></p>
+</div>
+
+<script>
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errorEl = document.getElementById("login-error");
+  errorEl.classList.add("hidden");
+
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: document.getElementById("login-username").value.trim(),
+      password: document.getElementById("login-password").value,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    errorEl.textContent = data.error || "Sign in failed.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+  window.location.href = "/";
+});
+</script>
+</body>
+</html>

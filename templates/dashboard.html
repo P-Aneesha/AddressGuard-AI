@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard &mdash; AddressGuard AI</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-mark">AG</span>
+      <div>
+        <h1>AddressGuard AI</h1>
+        <p>Intelligent Address Validation, Verification &amp; Delivery Risk Assessment</p>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a class="nav-btn" href="/">Validate</a>
+      <a class="nav-btn active" href="/dashboard">Dashboard</a>
+      <span class="muted" style="margin-left:10px;">{{ username }}</span>
+      <button class="nav-btn" id="logout-btn">Sign Out</button>
+    </nav>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <div class="stat-grid">
+    <div class="card stat-card">
+      <span class="stat-label">Total Validations</span>
+      <span class="stat-value">{{ total }}</span>
+    </div>
+    <div class="card stat-card">
+      <span class="stat-label">Average Confidence</span>
+      <span class="stat-value">{{ avg_confidence }}%</span>
+    </div>
+    <div class="card stat-card">
+      <span class="stat-label">Verified Rate</span>
+      <span class="stat-value">{{ verified_rate }}%</span>
+    </div>
+    <div class="card stat-card">
+      <span class="stat-label">Critical Risk Addresses</span>
+      <span class="stat-value">{{ risk_counts.get('CRITICAL', 0) }}</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>Status Breakdown</h2>
+      {% set status_order = ['VERIFIED', 'NEEDS CUSTOMER CONFIRMATION', 'SUSPICIOUS', 'FAKE ADDRESS'] %}
+      {% for s in status_order %}
+        {% set count = status_counts.get(s, 0) %}
+        {% set pct = (count / total * 100) if total else 0 %}
+        <div class="bar-row">
+          <span class="bar-label">{{ s }}</span>
+          <div class="bar-track"><div class="bar-fill {{ s | replace(' ', '-') }}" style="width: {{ pct }}%;"></div></div>
+          <span class="bar-count">{{ count }}</span>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="card">
+      <h2>Risk Breakdown</h2>
+      {% set risk_order = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] %}
+      {% for rlevel in risk_order %}
+        {% set count = risk_counts.get(rlevel, 0) %}
+        {% set pct = (count / total * 100) if total else 0 %}
+        <div class="bar-row">
+          <span class="bar-label">{{ rlevel }}</span>
+          <div class="bar-track"><div class="bar-fill risk-{{ rlevel }}" style="width: {{ pct }}%;"></div></div>
+          <span class="bar-count">{{ count }}</span>
+        </div>
+      {% endfor %}
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Recent Validations</h2>
+    <table class="data-table history-table">
+      <thead><tr><th>Validation ID</th><th>City / State</th><th>Confidence</th><th>Risk</th><th>Status</th><th>Timestamp</th></tr></thead>
+      <tbody>
+        {% for r in recent %}
+        <tr>
+          <td>{{ r.validation_id }}</td>
+          <td>{{ r.working_address.get('city') or '—' }} / {{ r.working_address.get('state') or '—' }}</td>
+          <td>{{ r.confidence_score }}%</td>
+          <td>{{ r.risk_level }}</td>
+          <td><span class="status-pill {{ r.final_status | replace(' ', '-') }}">{{ r.final_status }}</span></td>
+          <td>{{ r.created_at.strftime('%d %b %Y, %I:%M %p') }} UTC</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">No validations yet — run one from the Validate tab.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>AddressGuard AI &middot; Rule-based intelligent address verification &middot; Built with Flask + PostgreSQL</p>
+</footer>
+
+<script>
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  await fetch("/api/auth/logout", { method: "POST" });
+  window.location.href = "/login";
+});
+</script>
+</body>
+</html>
